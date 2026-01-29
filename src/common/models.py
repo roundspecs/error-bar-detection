@@ -23,6 +23,9 @@ class ImageAnnotation(BaseModel):
     json_path: Path
     lines: List[DatasetLine]
 
+    def __str__(self):
+        return f"ImageAnnotation(id={self.id})"
+
 class Point2D(BaseModel):
     x: float
     y: float
