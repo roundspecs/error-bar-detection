@@ -3,6 +3,8 @@ import json
 from src.common.models import ImageAnnotation, DatasetLine, DatasetPoint
 
 def load_dataset(dataset_root: Path):
+  """Loads the dataset from the given root directory."""
+  print(f"Loading dataset from {dataset_root}...")
   labels_dir = dataset_root / "labels"
   images_dir = dataset_root / "images"
 
