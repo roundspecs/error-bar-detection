@@ -25,6 +25,9 @@ class ImageAnnotation(BaseModel):
 
     def __str__(self):
         return f"ImageAnnotation(id={self.id})"
+    
+    def __repr__(self):
+        return self.__str__()
 
 class Point2D(BaseModel):
     x: float
