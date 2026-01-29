@@ -1,6 +1,6 @@
 from pathlib import Path
 import json
-from models import ImageAnnotation, DatasetLine, DatasetPoint
+from src.common.models import ImageAnnotation, DatasetLine, DatasetPoint
 
 def load_dataset(dataset_root: Path):
   labels_dir = dataset_root / "labels"
