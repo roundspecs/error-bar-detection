@@ -1,3 +1,4 @@
+from pathlib import Path
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -12,7 +13,15 @@ class DatasetLine(BaseModel):
     label: dict
     points: List[DatasetPoint]
 
-DatasetFile = List[DatasetLine]
+    @property
+    def line_name(self) -> str:
+        return self.label.get("lineName", "Unnamed Line")
+
+class ImageAnnotation(BaseModel):
+    id: str
+    image_path: Path
+    json_path: Path
+    lines: List[DatasetLine]
 
 class Point2D(BaseModel):
     x: float
