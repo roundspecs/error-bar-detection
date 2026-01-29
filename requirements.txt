@@ -1,0 +1,9 @@
+# Core Data Science
+matplotlib==3.10.8
+
+# Deep Learning (for Detection Task)
+torch==2.10.0
+
+# Utilities
+tqdm==4.67.1
+pydantic==2.12.5
