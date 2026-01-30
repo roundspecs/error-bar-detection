@@ -22,3 +22,14 @@ GEN_LONG_FRACTION = 0.20          # Fraction of images biased toward long bars
 GEN_LONG_THRESHOLD_PX = 40
 MIN_PIXEL_NONZERO = 2             # Treat smaller distances as zero
 GEN_MAX_LABEL_PX_FACTOR = 1.5     # Clamp labels to factor * height
+
+# Detection
+PATCH_H = 800  # 800px height covers ±400px from center, which is safe.
+PATCH_W = 32   # Error bar caps are usually 10-20px wide, so 32px is safe.
+
+# Training
+NUM_GENERATED_IMAGES = 3000 
+BATCH_SIZE = 64
+LEARNING_RATE = 0.001
+EPOCHS = 10
+TRAIN_SPLIT = 0.8

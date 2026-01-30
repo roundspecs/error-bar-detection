@@ -1,8 +1,10 @@
 # Core Data Science
 matplotlib==3.10.8
+pandas==3.0.0
 
 # Deep Learning (for Detection Task)
 torch==2.10.0
+torchvision==0.25.0
 
 # Utilities
 tqdm==4.67.1
