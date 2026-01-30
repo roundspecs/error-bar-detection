@@ -4,5 +4,5 @@ import random
 
 random.seed(42)
 
-generate_dataset(Path("data/generated"), count=30)
+generate_dataset(Path("data/generated"), count=3000)
 print('=' * 50)
