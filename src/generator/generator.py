@@ -76,7 +76,6 @@ def set_spines(ax):
         ax.spines["right"].set_visible(False)
 
 def add_occlusions(ax):
-    """Adds semi-transparent rectangles to simulate real-world noise/overlap."""
     if random.random() < 0.18:
         rect_w = random.uniform(0.08, 0.25)
         rect_h = random.uniform(0.06, 0.18)
@@ -92,7 +91,6 @@ def add_occlusions(ax):
         ax.add_patch(oc)
 
 def get_random_pixel_length(long_mode, h, dpi):
-    """Helper to determine error bar length based on generation mode."""
     dice_roll = random.random()
     if long_mode:
         if dice_roll < 0.30:
@@ -110,7 +108,6 @@ def get_random_pixel_length(long_mode, h, dpi):
             return abs(np.random.uniform(60, h * dpi * 0.2))
 
 def generate_data_points(num_points, is_line=True, is_log_y=False):
-    """Generates X and Y values."""
     if is_line and random.random() > 0.3:
         pool = range(0, 30)
         x_points = np.sort(random.sample(pool, num_points))
@@ -124,8 +121,6 @@ def generate_data_points(num_points, is_line=True, is_log_y=False):
     return x_points, y_points
 
 def calculate_error_bars(y_points, is_log_y, h, dpi, long_mode):
-    """Calculates top and bottom error values (in data units)."""
-    # Calculate conversion factors roughly
     data_span = np.max(y_points) - np.min(y_points)
     if data_span == 0: data_span = np.mean(y_points) * 0.1
     plot_h_pixels = h * dpi * 0.8
@@ -150,7 +145,6 @@ def calculate_error_bars(y_points, is_log_y, h, dpi, long_mode):
             else:
                 px_bot = px_top
 
-            # Convert pixel length to data units
             if is_log_y:
                 rel_err_top = px_top / plot_h_pixels
                 rel_err_bot = px_bot / plot_h_pixels
@@ -184,7 +178,6 @@ def generate_linegraph(ax, is_log_y, long_mode, h, dpi):
         marker = random.choice(["o", "s", "^", "v", "D"])
         linestyle = random.choice(["-", "--", "-."]) if not is_grayscale else "-"
         
-        # Plot
         ax.errorbar(
             x, y, yerr=[bot, top], label=f"Group_{i}",
             fmt=marker, color=color, capsize=random.randint(2, 6),
@@ -193,8 +186,8 @@ def generate_linegraph(ax, is_log_y, long_mode, h, dpi):
         
         # Save Raw Data for Label Calculation
         all_lines_data.append({
-            "label": f"Group_{i}",
-            "_raw_data": list(zip(x, y, top, bot)) # x, y, top_err, bot_err
+            "label": {"lineName": f"Group_{i}"},
+            "_raw_data": list(zip(x, y, top, bot))
         })
         
     return all_lines_data
@@ -206,7 +199,6 @@ def generate_barchart(ax, is_log_y, long_mode, h, dpi):
     is_grayscale = random.random() < 0.20
     colors = ["black", "gray"] if is_grayscale else ["tab:blue", "tab:orange", "tab:green", "tab:red"]
     
-    # Pre-generate points to align bars
     num_points = random.randint(4, 12)
     x_base = np.arange(num_points)
     width = 0.8 / num_series
@@ -218,7 +210,6 @@ def generate_barchart(ax, is_log_y, long_mode, h, dpi):
         x_pos = x_base + (i * width) - (0.4 if num_series > 1 else 0)
         color = random.choice(colors)
         
-        # Bar styles
         face = "white"
         edge = color
         hatch = random.choice(["/", "\\", "x", "."]) if random.random() > 0.5 else None
@@ -230,14 +221,13 @@ def generate_barchart(ax, is_log_y, long_mode, h, dpi):
         )
 
         all_lines_data.append({
-            "label": f"Group_{i}",
+            "label": {"lineName": f"Group_{i}"},
             "_raw_data": list(zip(x_pos, y, top, bot))
         })
 
     return all_lines_data
 
 def generate_boxplot(ax, is_log_y, long_mode, h, dpi):
-    """Generates a boxplot and maps whiskers to error bar labels."""
     num_boxes = random.randint(2, 6)
     
     data = []
@@ -264,7 +254,7 @@ def generate_boxplot(ax, is_log_y, long_mode, h, dpi):
     capprops = dict(linewidth=1.5)
     medianprops = dict(linewidth=2.0, color='red' if not is_grayscale else 'black')
     
-    patch_artist = random.random() > 0.4 # Fill boxes 60% of time
+    patch_artist = random.random() > 0.4
     
     ax.bxp(stats, patch_artist=patch_artist,
            boxprops=boxprops, whiskerprops=whiskerprops,
@@ -273,7 +263,7 @@ def generate_boxplot(ax, is_log_y, long_mode, h, dpi):
 
     _raw_data = []
     for i, s in enumerate(stats):
-        x_pos = i + 1  # Matplotlib 1-based indexing by default
+        x_pos = i + 1
         median = s['med']
         whis_hi = s['whishi']
         whis_lo = s['whislo']
@@ -284,12 +274,11 @@ def generate_boxplot(ax, is_log_y, long_mode, h, dpi):
         _raw_data.append((x_pos, median, top_err, bot_err))
 
     return [{
-        "label": "Boxplot_Series",
+        "label": {"lineName": "Boxplot_Series"},
         "_raw_data": _raw_data
     }]
 
 def calculate_labels(fig, ax, all_lines_data, h_inches, is_log_y):
-    """Transforms data coordinates into pixel labels for the JSON output."""
     height_px = fig.canvas.get_width_height()[1]
     
     for line_data in all_lines_data:
@@ -297,13 +286,10 @@ def calculate_labels(fig, ax, all_lines_data, h_inches, is_log_y):
         json_points = []
         
         for rx, ry, rt, rb in raw_points:
-            # Main Point
             disp = ax.transData.transform((rx, ry))
             px_y, px_x = float(height_px - disp[1]), float(disp[0])
 
-            # Error Bar Tips
             if is_log_y:
-                # Handle log scale safe limits
                 disp_top = ax.transData.transform((rx, ry + rt))
                 safe_bot = max(ry - rb, ax.get_ylim()[0] * 1.001)
                 disp_bot = ax.transData.transform((rx, safe_bot))
@@ -314,11 +300,9 @@ def calculate_labels(fig, ax, all_lines_data, h_inches, is_log_y):
             px_top_loc = float(height_px - disp_top[1])
             px_bot_loc = float(height_px - disp_bot[1])
 
-            # Calculate Distances
             d_top = abs(px_y - px_top_loc) if rt > 0 else 0
             d_bot = abs(px_y - px_bot_loc) if rb > 0 else 0
 
-            # Sanity Checks / Clamping
             max_safe = height_px * 1.5
             d_top = min(d_top, max_safe)
             d_bot = min(d_bot, max_safe)
