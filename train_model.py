@@ -5,7 +5,8 @@ from torch.utils.data import DataLoader, random_split
 from pathlib import Path
 from tqdm import tqdm
 import time
-
+import random
+import numpy as np
 from src.generator.pipeline import generate_dataset
 from src.detection.dataset import prepare_patches, ErrorBarPatchDataset
 from src.detection.model import ErrorBarRegressor
@@ -15,6 +16,13 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 def train():
     print(f"Starting Pipeline on device: {DEVICE}")
+
+    # Make it reproducible
+    torch.manual_seed(42)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    np.random.seed(42)
+    random.seed(42)
     
     ROOT_DIR = Path(__file__).parent
     DATA_RAW = ROOT_DIR / "data" / "generated"
