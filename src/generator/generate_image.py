@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from matplotlib import cbook
-from config import (
+from src.config import (
     DPI_OPTIONS,
     PLOT_TYPE_PROBS,
     GEN_MISSING_BAR_PROB,

@@ -2,7 +2,7 @@ import json
 import uuid
 from pathlib import Path
 import matplotlib.pyplot as plt
-from src.generator.generator import generate_image
+from src.generator.generate_image import generate_image
 from src.common.utils import delete_dir
 from tqdm import tqdm
 

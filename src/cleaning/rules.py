@@ -1,5 +1,5 @@
 from src.common.models import DatasetLine, DatasetPoint, ImageAnnotation
-from config import MAX_BARHEIGHT, MINIMUM_PHANTOM_DISTANCE
+from src.config import MAX_BARHEIGHT, MINIMUM_PHANTOM_DISTANCE
 from typing import List
 
 def remove_points_with_long_barheight(dataset: List[ImageAnnotation]) -> List[ImageAnnotation]:

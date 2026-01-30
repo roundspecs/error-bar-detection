@@ -8,7 +8,7 @@ from pathlib import Path
 from torch.utils.data import Dataset
 from torchvision import transforms
 from tqdm import tqdm
-from config import PATCH_H, PATCH_W
+from src.config import PATCH_H, PATCH_W
 
 class ErrorBarPatchDataset(Dataset):
     """PyTorch Dataset that loads pre-cropped patches."""

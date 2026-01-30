@@ -8,10 +8,10 @@ from tqdm import tqdm
 import time
 import random
 import numpy as np
-from src.generator.pipeline import generate_dataset
+from src.generator.generate import generate_dataset
 from src.detection.dataset import prepare_patches, ErrorBarPatchDataset
 from src.detection.model import ErrorBarRegressor
-from config import NUM_GENERATED_IMAGES, BATCH_SIZE, LEARNING_RATE, EPOCHS, TRAIN_SPLIT
+from src.config import NUM_GENERATED_IMAGES, BATCH_SIZE, LEARNING_RATE, EPOCHS, TRAIN_SPLIT
 
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -25,24 +25,24 @@ def train():
     np.random.seed(42)
     random.seed(42)
     
-    ROOT_DIR = Path(__file__).parent
-    DATA_RAW = ROOT_DIR / "data" / "generated"
-    DATA_PATCHES = ROOT_DIR / "data" / "patches"
+    ROOT_DIR = Path(__file__).resolve().parent.parent
+    DATA = ROOT_DIR / "data" / "generated"
+    DATA_PATCHES = ROOT_DIR / "data" / "generated_patches"
     MODEL_SAVE_PATH = ROOT_DIR / "error_bar_model.pth"
 
     print(f"\n[1/4]")
     generated_image = False
-    existing_images = list((DATA_RAW / "images").glob("*.png")) if DATA_RAW.exists() else []
+    existing_images = list((DATA / "images").glob("*.png")) if DATA.exists() else []
     
     if len(existing_images) < NUM_GENERATED_IMAGES:
-        generate_dataset(DATA_RAW, count=NUM_GENERATED_IMAGES)
+        generate_dataset(DATA, count=NUM_GENERATED_IMAGES)
         generated_image = True
     else:
         print(f"Found {len(existing_images)} existing images. Skipping generation.")
 
     print(f"\n[2/4]")
     if generated_image or not (DATA_PATCHES / "metadata.csv").exists():
-        prepare_patches(DATA_RAW, DATA_PATCHES)
+        prepare_patches(DATA, DATA_PATCHES)
     else:
         print(f"Patches already exist. Skipping patch preparation.")
     

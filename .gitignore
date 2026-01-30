@@ -211,3 +211,6 @@ data/
 
 # Model
 *.pth
+
+# Failure Analysis
+failure_analysis/
