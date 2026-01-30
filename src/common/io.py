@@ -45,15 +45,12 @@ def save_dataset(dataset: List[ImageAnnotation], output_root: Path):
     for image in dataset:
         dest_image_path = images_dir / image.image_path.name
         
-        if image.image_path.resolve() == dest_image_path.resolve():
-          print("Source and destination image paths are the same. Skipping copy.")
-          return
-
-        try:
-            shutil.copy2(image.image_path, dest_image_path)
-        except FileNotFoundError:
-            print(f"Warning: Source image missing for {image.image_id}. Skipping copy.")
-            return
+        if image.image_path.resolve() != dest_image_path.resolve():
+          try:
+              shutil.copy2(image.image_path, dest_image_path)
+          except FileNotFoundError:
+              print(f"Warning: Source image missing for {image.image_id}. Skipping copy.")
+              return
 
         json_data = [line.model_dump(exclude_none=True) for line in image.lines]
         
