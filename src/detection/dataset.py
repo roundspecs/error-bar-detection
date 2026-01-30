@@ -123,6 +123,8 @@ def prepare_patches(source_root: Path, dest_root: Path):
                 
                 for line in data:
                     for point in line.get("points", []):
+                        if point.get('label') in ['xmin', 'xmax', 'ymin', 'ymax']:
+                            continue
                         cx = int(point['x'])
                         cy = int(point['y'])
                         
