@@ -48,7 +48,7 @@ def train():
     val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
 
     model = ErrorBarRegressor().to(DEVICE)
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     
     print(f"\n[4/4]\nStarting Training for {EPOCHS} epochs...")
