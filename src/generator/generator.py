@@ -6,6 +6,7 @@ import matplotlib.patches as mpatches
 from config import (
     DPI_OPTIONS,
     GEN_ASYMMETRIC_PROB,
+    GEN_LONG_FRACTION,
     GEN_MISSING_BAR_PROB,
     PLOT_TYPE_PROBS,
 )
@@ -22,14 +23,27 @@ def generate_image():
     set_background(ax)
     set_spines(ax)
 
+    long_mode = random.random() < GEN_LONG_FRACTION
+
+    # Decide Log Scale (Common to line/bar)
+    is_log_y = False
+    if dice < PLOT_TYPE_PROBS["linegraph"] and random.random() > 0.6:
+        is_log_y = True
+        ax.set_yscale("log")
+
     dice = random.random()
     if dice < PLOT_TYPE_PROBS["linegraph"]:
-        plot_data = generate_linegraph(ax)
+        plot_data = generate_linegraph(ax, is_log_y, long_mode, h, dpi)
     elif dice < PLOT_TYPE_PROBS["linegraph"] + PLOT_TYPE_PROBS["barchart"]:
         plot_data = generate_barchart(ax)
     else:
         plot_data = generate_boxplot(ax)
 
+    ax.set_title(f"Generated Plot {uuid.uuid4().hex[:6]}")
+    if random.random() > 0.2:
+        locs = ["best", "upper right", "upper left", "lower right"]
+        ax.legend(loc=random.choice(locs))
+        
     return fig, plot_data
 
 
