@@ -71,7 +71,7 @@ def train():
     model = ErrorBarRegressor().to(DEVICE)
     criterion = nn.L1Loss() # Changed to L1Loss for better outlier handling
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2, verbose=True)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2)
     
     print(f"\n[4/4]\nStarting Training for {EPOCHS} epochs...")
     start_time = time.time()
