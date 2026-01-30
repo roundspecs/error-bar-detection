@@ -25,13 +25,13 @@ def generate_image():
 
     long_mode = random.random() < GEN_LONG_FRACTION
 
+    dice = random.random()
     # Decide Log Scale (Common to line/bar)
     is_log_y = False
     if dice < PLOT_TYPE_PROBS["linegraph"] and random.random() > 0.6:
         is_log_y = True
         ax.set_yscale("log")
 
-    dice = random.random()
     if dice < PLOT_TYPE_PROBS["linegraph"]:
         plot_data = generate_linegraph(ax, is_log_y, long_mode, h, dpi)
     elif dice < PLOT_TYPE_PROBS["linegraph"] + PLOT_TYPE_PROBS["barchart"]:
@@ -43,7 +43,7 @@ def generate_image():
     if random.random() > 0.2:
         locs = ["best", "upper right", "upper left", "lower right"]
         ax.legend(loc=random.choice(locs))
-        
+
     return fig, plot_data
 
 
