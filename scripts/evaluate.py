@@ -17,20 +17,16 @@ from src.detection.dataset import prepare_patches, ErrorBarPatchDataset
 from src.detection.model import ErrorBarRegressor
 
 def evaluate():
-    # 1. Fix Path Logic (Go up two levels from scripts/evaluate.py)
+    # 1. Fix Path Logic
     ROOT_DIR = Path(__file__).resolve().parent.parent
-    
-    # Using 'cleaned' data (Real images) to test Sim2Real transfer
     DATA_DIR = ROOT_DIR / "data" / "cleaned"
     PATCHES_DIR = ROOT_DIR / "data" / "cleaned_patches"
+    MODEL_PATH = ROOT_DIR / "error_bar_model.pth" # Or check output/models/ if you saved it there
     
-    # Model expected in Root
-    MODEL_PATH = ROOT_DIR / "error_bar_model.pth"
     DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
     print(f"Starting Evaluation")
-    print(f"Root Dir: {ROOT_DIR}")
-    print(f"Device:   {DEVICE}")
+    print(f"Device: {DEVICE}")
     
     if not DATA_DIR.exists():
         print(f"❌ Error: Could not find dataset at {DATA_DIR}")
@@ -74,7 +70,6 @@ def evaluate():
     targets = torch.cat(all_targets).numpy()
     
     # --- STATISTICS GENERATION ---
-    # Create a DataFrame for easy analysis
     df = pd.DataFrame({
         'true_top': targets[:, 0],
         'true_bot': targets[:, 1],
@@ -82,23 +77,32 @@ def evaluate():
         'pred_bot': preds[:, 1]
     })
 
-    # Calculate errors
+    # Calculate absolute errors
     df['err_top'] = np.abs(df['true_top'] - df['pred_top'])
     df['err_bot'] = np.abs(df['true_bot'] - df['pred_bot'])
     df['max_error'] = df[['err_top', 'err_bot']].max(axis=1)
 
+    # --- EXPLICIT MAE CALCULATION ---
+    mae_top = df['err_top'].mean()
+    mae_bot = df['err_bot'].mean()
+    # Global MAE is the mean of ALL error components (Top + Bot) combined
+    mae_global = (df['err_top'].sum() + df['err_bot'].sum()) / (2 * len(df))
+
     print("\n" + "="*50)
-    print("=== 📊 Error Statistics (Pixels) ===")
+    print("=== 🏆 FINAL RESULTS ===")
     print("="*50)
-    # round(2) makes it readable like your sample
+    print(f"Mean Absolute Error (MAE): {mae_global:.2f} px")
+    print(f"  - Top Bar MAE: {mae_top:.2f} px")
+    print(f"  - Bot Bar MAE: {mae_bot:.2f} px")
+    print("-" * 50)
+
+    print("\n=== 📊 Detailed Statistics (Pixels) ===")
     print(df[['err_top', 'err_bot', 'max_error']].describe().round(2))
 
     # --- GHOST BAR ANALYSIS ---
-    # Flatten arrays to treat every single bar (top or bottom) as an instance
     flat_targets = np.concatenate([df['true_top'].values, df['true_bot'].values])
     flat_errors = np.concatenate([df['err_top'].values, df['err_bot'].values])
 
-    # Mask: Missing bars are exactly 0.0
     mask_missing = (flat_targets == 0)
     mask_real = (flat_targets > 0)
 
@@ -117,29 +121,22 @@ def evaluate():
         shutil.rmtree(FAILURE_DIR)
     FAILURE_DIR.mkdir()
 
-    # Get indices of the 20 worst errors
     top_failures = df.nlargest(20, 'max_error')
     
     print(f"📸 Saving top 20 worst failure plots to {FAILURE_DIR.name}/...")
     
     for idx, row in top_failures.iterrows():
-        # Retrieve the specific patch using the dataset
         img_tensor, _ = dataset[idx] 
-        
-        # Denormalize image for display: (img * 0.5) + 0.5
         img_np = img_tensor.permute(1, 2, 0).numpy() * 0.5 + 0.5
         img_np = np.clip(img_np, 0, 1)
 
         plt.figure(figsize=(2, 10))
         plt.imshow(img_np)
         
-        center_y = 400 # Patch height is 800, so center is 400
+        center_y = 400 
         
-        # Draw True (Green)
         plt.axhline(center_y - row['true_top'], color='green', linewidth=2, label='True')
         plt.axhline(center_y + row['true_bot'], color='green', linewidth=2)
-        
-        # Draw Pred (Red)
         plt.axhline(center_y - row['pred_top'], color='red', linestyle='--', linewidth=2, label='Pred')
         plt.axhline(center_y + row['pred_bot'], color='red', linestyle='--', linewidth=2)
         
@@ -147,8 +144,7 @@ def evaluate():
         plt.axis('off')
         plt.tight_layout()
         
-        # Save plot
-        safe_name = dataset.metadata.iloc[idx]['filename'] # getting filename from original metadata
+        safe_name = dataset.metadata.iloc[idx]['filename']
         safe_name = Path(safe_name).stem
         plt.savefig(FAILURE_DIR / f"rank_{int(row['max_error'])}px_{safe_name}.png")
         plt.close()

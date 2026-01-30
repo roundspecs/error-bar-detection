@@ -35,7 +35,7 @@ class ErrorBarRegressor(nn.Module):
         self.flatten = nn.Flatten()
         
         self.fc = nn.Sequential(
-            nn.Linear(3072, 256),
+            nn.Linear(6144, 256),
             nn.ReLU(),
             nn.Dropout(0.5), # Prevents overfitting
             nn.Linear(256, 2) # Final Output: [Top_Distance, Bottom_Distance]

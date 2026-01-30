@@ -208,6 +208,7 @@ __marimo__/
 
 # Dataset
 data/
+sample_*
 
 # Model
 *.pth
