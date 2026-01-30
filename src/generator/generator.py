@@ -67,6 +67,9 @@ def set_background(ax):
             ax.grid(True, linestyle=":", alpha=0.4, color="gray")
 
 def set_spines(ax):
+    for spine in ax.spines.values():
+        spine.set_linewidth(random.uniform(1.0, 2.0))
+
     if random.random() > 0.4:
         ax.spines["top"].set_visible(False)
         ax.spines["right"].set_visible(False)
@@ -179,13 +182,23 @@ def generate_linegraph(ax, is_log_y, long_mode, h, dpi):
         marker = random.choice(["o", "s", "^", "v", "D", ""])
         linestyle = random.choice(["-", "--", "-."]) if not is_grayscale else "-"
         
+        # Main line width: 2.0 to 4.0 (Defaults are usually 1.5)
+        lw = random.uniform(2.0, 4.0)
+        # Error bar width: 1.5 to 3.0
+        elw = random.uniform(1.5, 3.0)
+        # Marker edge width
+        mew = random.uniform(1.5, 2.5)
+
         ax.errorbar(
             x, y, yerr=[bot, top], label=f"Group_{i}",
             fmt=marker, color=color, capsize=random.choice([0, 3, 5]),
-            linestyle=linestyle
+            linestyle=linestyle,
+            linewidth=lw,       # Thicker connecting lines
+            elinewidth=elw,     # Thicker error bars
+            capthick=elw,       # Thicker caps to match error bars
+            markeredgewidth=mew # Thicker marker edges
         )
         
-        # Save Raw Data for Label Calculation
         all_lines_data.append({
             "label": {"lineName": f"Group_{i}"},
             "_raw_data": list(zip(x, y, top, bot))
@@ -215,10 +228,20 @@ def generate_barchart(ax, is_log_y, long_mode, h, dpi):
         edge = color
         hatch = random.choice(["/", "\\", "x", "."]) if random.random() > 0.5 else None
         
+        # Bar edge width
+        bar_lw = random.uniform(1.5, 2.5)
+        # Error bar width
+        err_lw = random.uniform(1.5, 3.0)
+
         ax.bar(
             x_pos, y, width=width, label=f"Group_{i}",
             color=face, edgecolor=edge, hatch=hatch,
-            yerr=[bot, top], ecolor="black", capsize=random.randint(2, 6)
+            linewidth=bar_lw,  # Thicker bar edges
+            yerr=[bot, top], ecolor="black", capsize=random.randint(2, 6),
+            error_kw={
+                "elinewidth": err_lw, # Thicker error lines
+                "capthick": err_lw    # Thicker caps
+            }
         )
 
         all_lines_data.append({
@@ -250,10 +273,11 @@ def generate_boxplot(ax, is_log_y, long_mode, h, dpi):
     is_grayscale = random.random() < 0.20
     colors = ["black", "gray"] if is_grayscale else ["tab:blue", "tab:orange", "tab:green", "tab:red"]
     
-    boxprops = dict(linewidth=1.5)
-    whiskerprops = dict(linewidth=1.5, linestyle='-')
-    capprops = dict(linewidth=1.5)
-    medianprops = dict(linewidth=2.0, color='red' if not is_grayscale else 'black')
+    # Increased all line widths to ~2.0+
+    boxprops = dict(linewidth=random.uniform(1.8, 2.5))
+    whiskerprops = dict(linewidth=random.uniform(1.8, 2.5), linestyle='-')
+    capprops = dict(linewidth=random.uniform(1.8, 2.5))
+    medianprops = dict(linewidth=random.uniform(2.0, 3.0), color='red' if not is_grayscale else 'black')
     
     patch_artist = random.random() > 0.4
     
