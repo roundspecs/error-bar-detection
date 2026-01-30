@@ -10,33 +10,47 @@ from torchvision import transforms
 from tqdm import tqdm
 from config import PATCH_H, PATCH_W
 
-
 class ErrorBarPatchDataset(Dataset):
     """PyTorch Dataset that loads pre-cropped patches."""
-    def __init__(self, metadata_csv: Path, transform=None):
+    def __init__(self, metadata_csv: Path, transform=None, augment=False):
+        """
+        Args:
+            augment (bool): If True, applies random noise/blur (Use for Training).
+                            If False, only normalizes (Use for Validation/Testing).
+        """
         self.metadata = pd.read_csv(metadata_csv)
         self.root_dir = metadata_csv.parent / "images"
-        self.transform = transform
         
-        # Default transform if none provided: Convert to Tensor and Normalize
-        if self.transform is None:
+        # Base transform
+        self.base_transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+        ])
+
+        if augment:
             self.transform = transforms.Compose([
-                transforms.ToTensor(),
-                transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
+                # 1. Blur
+                transforms.RandomApply([
+                    transforms.GaussianBlur(kernel_size=3, sigma=(0.1, 1.5))
+                ], p=0.3),
+                
+                # 2. Lighting/Color Noise
+                transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.1),
+                
+                # 3. Standard formatting
+                self.base_transform
             ])
+        else:
+            self.transform = self.base_transform
 
     def __len__(self):
         return len(self.metadata)
 
     def __getitem__(self, idx):
         row = self.metadata.iloc[idx]
-        
         img_path = self.root_dir / row['filename']
         image = Image.open(img_path).convert("RGB")
         
-        # Targets: We want to predict top and bottom distances
-        # Normalize targets? For now, we keep raw pixel values. 
-        # The model will learn to predict these directly.
         targets = torch.tensor([
             float(row['top_dist']), 
             float(row['bottom_dist'])
