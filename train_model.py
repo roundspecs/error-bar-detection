@@ -70,6 +70,7 @@ def train():
     model = ErrorBarRegressor().to(DEVICE)
     criterion = nn.L1Loss() # Changed to L1Loss for better outlier handling
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
+    scheduler = ReduceLROnPlateau(optimizer, mode='min', factor=0.1, patience=2, verbose=True)
     
     print(f"\n[4/4]\nStarting Training for {EPOCHS} epochs...")
     start_time = time.time()
@@ -107,6 +108,8 @@ def train():
         avg_val_loss = val_loss / len(val_loader)
         
         print(f"Results - Train Loss: {avg_train_loss:.2f} | Val Loss: {avg_val_loss:.2f}")
+
+        scheduler.step(avg_val_loss)
 
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
