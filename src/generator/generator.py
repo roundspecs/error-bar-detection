@@ -42,7 +42,9 @@ def generate_image():
         plot_data = generate_boxplot(ax, is_log_y, long_mode, h, dpi)
 
     ax.set_title(f"Generated Plot {uuid.uuid4().hex[:6]}")
-    if random.random() > 0.2:
+    
+    handles, labels = ax.get_legend_handles_labels()
+    if handles and random.random() > 0.2:
         locs = ["best", "upper right", "upper left", "lower right"]
         ax.legend(loc=random.choice(locs))
 
