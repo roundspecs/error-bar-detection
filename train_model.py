@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader, random_split
+from torch.utils.data import DataLoader, Subset  # Changed random_split to Subset
 from pathlib import Path
 from tqdm import tqdm
 import time
@@ -32,6 +32,7 @@ def train():
     print(f"\n[1/4]")
     generated_image = False
     existing_images = list((DATA_RAW / "images").glob("*.png")) if DATA_RAW.exists() else []
+    
     if len(existing_images) < NUM_GENERATED_IMAGES:
         generate_dataset(DATA_RAW, count=NUM_GENERATED_IMAGES)
         generated_image = True
@@ -39,24 +40,35 @@ def train():
         print(f"Found {len(existing_images)} existing images. Skipping generation.")
 
     print(f"\n[2/4]")
-    if generated_image:
+    if generated_image or not (DATA_PATCHES / "metadata.csv").exists():
         prepare_patches(DATA_RAW, DATA_PATCHES)
     else:
-        print(f"Found {len(existing_images)} existing images. Skipping patch preparation.")
+        print(f"Patches already exist. Skipping patch preparation.")
     
     print(f"\n[3/4]")
-    full_dataset = ErrorBarPatchDataset(DATA_PATCHES / "metadata.csv")
+    csv_path = DATA_PATCHES / "metadata.csv"
+
+    train_ds_base = ErrorBarPatchDataset(csv_path, augment=True)
+    val_ds_base = ErrorBarPatchDataset(csv_path, augment=False)
     
-    train_size = int(TRAIN_SPLIT * len(full_dataset))
-    val_size = len(full_dataset) - train_size
-    train_data, val_data = random_split(full_dataset, [train_size, val_size])
+    dataset_len = len(train_ds_base)
+    indices = list(range(dataset_len))
+    split_idx = int(TRAIN_SPLIT * dataset_len)
+    
+    np.random.shuffle(indices)
+    train_indices = indices[:split_idx]
+    val_indices = indices[split_idx:]
+    
+    train_data = Subset(train_ds_base, train_indices)
+    val_data = Subset(val_ds_base, val_indices)
+    
     print(f"Training on {len(train_data)} patches. Validating on {len(val_data)} patches.")
 
     train_loader = DataLoader(train_data, batch_size=BATCH_SIZE, shuffle=True, num_workers=2)
     val_loader = DataLoader(val_data, batch_size=BATCH_SIZE, shuffle=False)
 
     model = ErrorBarRegressor().to(DEVICE)
-    criterion = nn.L1Loss()
+    criterion = nn.L1Loss() # Changed to L1Loss for better outlier handling
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
     
     print(f"\n[4/4]\nStarting Training for {EPOCHS} epochs...")
