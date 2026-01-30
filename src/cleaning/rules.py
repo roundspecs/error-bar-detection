@@ -1,9 +1,9 @@
 from src.common.models import DatasetLine, DatasetPoint, ImageAnnotation
+from config import MAX_BARHEIGHT, MINIMUM_PHANTOM_DISTANCE
 from typing import List
 
 def remove_points_with_long_barheight(dataset: List[ImageAnnotation]) -> List[ImageAnnotation]:
     """Removes points where the distance to top or bottom bar is greater than 430 pixels."""
-    MAX_BARHEIGHT = 430.0
     total_removed = 0
 
     for image in dataset:
@@ -20,7 +20,6 @@ def remove_points_with_long_barheight(dataset: List[ImageAnnotation]) -> List[Im
 
 def remove_points_with_error_bars_beyond_image(dataset: List[ImageAnnotation]) -> List[ImageAnnotation]:
     """Removes points whose error bars extend beyond phantom points."""
-    TOLERANCE = 15
     total_removed = 0
 
     for image in dataset:
@@ -34,7 +33,7 @@ def remove_points_with_error_bars_beyond_image(dataset: List[ImageAnnotation]) -
             for point in line.points:
                 upper_bar = point.y - point.topBarPixelDistance
                 lower_bar = point.y + point.bottomBarPixelDistance
-                if upper_bar < min_phantom_y - TOLERANCE or lower_bar > max_phantom_y + TOLERANCE:
+                if upper_bar < min_phantom_y - MINIMUM_PHANTOM_DISTANCE or lower_bar > max_phantom_y + MINIMUM_PHANTOM_DISTANCE:
                     total_removed += 1
                     continue
                 filtered_points.append(point)
