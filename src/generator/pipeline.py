@@ -4,6 +4,7 @@ from pathlib import Path
 import matplotlib.pyplot as plt
 from src.generator.generator import generate_image
 from src.common.utils import delete_dir
+from tqdm import tqdm
 
 def generate_dataset(output_dir: Path, count: int):
     """Runs the image generation pipeline."""
@@ -18,7 +19,7 @@ def generate_dataset(output_dir: Path, count: int):
     img_dir.mkdir(parents=True, exist_ok=True)
     lbl_dir.mkdir(parents=True, exist_ok=True)
 
-    for i in range(count):
+    for i in tqdm(range(count)):
         try:
             fig, data = generate_image()
 
@@ -29,8 +30,7 @@ def generate_dataset(output_dir: Path, count: int):
             with open(lbl_dir / f"{file_id}.json", "w") as f:
                 json.dump(data, f, indent=2)
 
-            if (i + 1) % 100 == 0:
-                print(f"Generated {i + 1}/{count}")
+
         except Exception as e:
             print(f"Error generating sample {i}: {e}")
             plt.close("all")
