@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, Subset  # Changed random_split to Subset
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from pathlib import Path
 from tqdm import tqdm
 import time
