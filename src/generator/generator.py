@@ -3,6 +3,7 @@ import random
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from matplotlib import cbook
 from config import (
     DPI_OPTIONS,
     PLOT_TYPE_PROBS,
@@ -28,7 +29,6 @@ def generate_image():
     dice = random.random()
     plot_data = []
 
-    # Decide Log Scale (Common to line/bar)
     is_log_y = False
     if dice < PLOT_TYPE_PROBS["linegraph"] and random.random() > 0.6:
         is_log_y = True
@@ -39,10 +39,8 @@ def generate_image():
     elif dice < PLOT_TYPE_PROBS["linegraph"] + PLOT_TYPE_PROBS["barchart"]:
         plot_data = generate_barchart(ax, is_log_y, long_mode, h, dpi)
     else:
-        # Placeholder for boxplot if you implement it later
-        plot_data = generate_boxplot(ax)
+        plot_data = generate_boxplot(ax, is_log_y, long_mode, h, dpi)
 
-    # 5. Add Titles/Legends/Occlusions
     ax.set_title(f"Generated Plot {uuid.uuid4().hex[:6]}")
     if random.random() > 0.2:
         locs = ["best", "upper right", "upper left", "lower right"]
@@ -50,7 +48,6 @@ def generate_image():
 
     add_occlusions(ax)
 
-    # 6. Calculate Labels (Requires canvas draw to get pixel coords)
     fig.canvas.draw()
     final_json = calculate_labels(fig, ax, plot_data, h, is_log_y)
 
@@ -237,8 +234,57 @@ def generate_barchart(ax, is_log_y, long_mode, h, dpi):
 
     return all_lines_data
 
-def generate_boxplot(ax):
-    return []
+def generate_boxplot(ax, is_log_y, long_mode, h, dpi):
+    """Generates a boxplot and maps whiskers to error bar labels."""
+    num_boxes = random.randint(2, 6)
+    
+    data = []
+    for _ in range(num_boxes):
+        if is_log_y:
+            sample = np.random.lognormal(mean=2.0, sigma=0.5, size=random.randint(20, 50))
+        else:
+            dice = random.random()
+            if dice < 0.6:
+                sample = np.random.normal(loc=50, scale=15, size=random.randint(20, 50))
+            elif dice < 0.8:
+                sample = np.random.uniform(10, 90, size=random.randint(20, 50))
+            else:
+                sample = np.random.gamma(2, 10, size=random.randint(20, 50)) + 10
+        data.append(sample)
+
+    stats = cbook.boxplot_stats(data)
+
+    is_grayscale = random.random() < 0.20
+    colors = ["black", "gray"] if is_grayscale else ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+    
+    boxprops = dict(linewidth=1.5)
+    whiskerprops = dict(linewidth=1.5, linestyle='-')
+    capprops = dict(linewidth=1.5)
+    medianprops = dict(linewidth=2.0, color='red' if not is_grayscale else 'black')
+    
+    patch_artist = random.random() > 0.4 # Fill boxes 60% of time
+    
+    ax.bxp(stats, patch_artist=patch_artist,
+           boxprops=boxprops, whiskerprops=whiskerprops,
+           capprops=capprops, medianprops=medianprops,
+           showfliers=True)
+
+    _raw_data = []
+    for i, s in enumerate(stats):
+        x_pos = i + 1  # Matplotlib 1-based indexing by default
+        median = s['med']
+        whis_hi = s['whishi']
+        whis_lo = s['whislo']
+        
+        top_err = whis_hi - median
+        bot_err = median - whis_lo
+        
+        _raw_data.append((x_pos, median, top_err, bot_err))
+
+    return [{
+        "label": "Boxplot_Series",
+        "_raw_data": _raw_data
+    }]
 
 def calculate_labels(fig, ax, all_lines_data, h_inches, is_log_y):
     """Transforms data coordinates into pixel labels for the JSON output."""

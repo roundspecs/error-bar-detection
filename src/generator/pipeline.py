@@ -3,11 +3,14 @@ import uuid
 from pathlib import Path
 import matplotlib.pyplot as plt
 from src.generator.generator import generate_image
-
+from src.common.utils import delete_dir
 
 def generate_dataset(output_dir: Path, count: int):
     """Runs the image generation pipeline."""
     print(f"Generating {count} samples into {output_dir}...")
+
+    if output_dir.exists():
+        delete_dir(output_dir)
 
     img_dir = output_dir / "images"
     lbl_dir = output_dir / "labels"
