@@ -18,27 +18,6 @@ def remove_points_with_long_barheight(dataset: List[ImageAnnotation]) -> List[Im
     print("Total points removed due to long barheight:", total_removed)
     return dataset
 
-def remove_points_near_phantoms(dataset: List[ImageAnnotation]) -> List[ImageAnnotation]:
-    """Removes points that are too close to phantom points."""
-    MIN_DISTANCE_TO_PHANTOM = 10
-    total_removed = 0
-
-    for image in dataset:
-        phantom_points = {(p.x, p.y) for line in image.lines for p in line.points if p.label in ['xmin', 'xmax', 'ymin', 'ymax']}
-        for line in image.lines:
-            for point in line.points:
-              if point.label in ['xmin', 'xmax', 'ymin', 'ymax']:
-                  continue
-              distance = min(
-                  ((point.x - px) ** 2 + (point.y - py) ** 2) ** 0.5
-                  for (px, py) in phantom_points
-              ) if phantom_points else float('inf')
-              if distance < MIN_DISTANCE_TO_PHANTOM:
-                  line.points.remove(point)
-                  total_removed += 1
-    print(f"Total points removed near phantoms: {total_removed}")
-    return dataset
-
 def remove_points_with_error_bars_beyond_image(dataset: List[ImageAnnotation]) -> List[ImageAnnotation]:
     """Removes points whose error bars extend beyond phantom points."""
     TOLERANCE = 15
