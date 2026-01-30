@@ -57,7 +57,7 @@ def generate_image():
     return fig, final_json
 
 def set_background(ax):
-    if random.random() > 0.7:
+    if random.random() > 0.8:
         ax.set_facecolor(random.choice(["#f0f0f0", "#e0e0e0", "#ebebeb"]))
         ax.grid(True, linestyle="--", alpha=0.5)
         ax.set_axisbelow(True)
