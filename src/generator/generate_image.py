@@ -12,7 +12,8 @@ from src.config import (
     GEN_LONG_FRACTION,
     MIN_PIXEL_NONZERO,
     GEN_MAX_LABEL_PX_FACTOR,
-    REALISTIC_COLORS
+    REALISTIC_COLORS,
+    MAX_BARHEIGHT
 )
 
 def generate_image():
@@ -95,21 +96,28 @@ def add_occlusions(ax):
         ax.add_patch(oc)
 
 def get_random_pixel_length(long_mode, h, dpi):
+    """
+    Generates a pixel length for an error bar.
+    Tuned to match Raw Dataset: Mean ~28px, Median ~13px.
+    """
     dice_roll = random.random()
+    
+    val = 0.0
+    
     if long_mode:
-        if dice_roll < 0.30:
-            return abs(np.random.normal(loc=60, scale=20))
-        elif dice_roll < 0.75:
-            return abs(np.random.uniform(50, max(80, h * dpi * 0.18)))
+        if dice_roll < 0.50:
+            val = abs(np.random.normal(loc=50, scale=15))
         else:
-            return abs(np.random.uniform(80, h * dpi * 0.25))
+            val = abs(np.random.uniform(60, 150))
     else:
-        if dice_roll < 0.60:
-            return abs(np.random.gamma(shape=1.0, scale=12.0))
-        elif dice_roll < 0.90:
-            return abs(np.random.normal(loc=35, scale=10))
+        if dice_roll < 0.70:
+            val = abs(np.random.gamma(shape=1.5, scale=8.0))
+        elif dice_roll < 0.95:
+            val = abs(np.random.normal(loc=30, scale=10))
         else:
-            return abs(np.random.uniform(60, h * dpi * 0.2))
+            val = abs(np.random.uniform(50, 100))
+
+    return min(val, MAX_BARHEIGHT)
 
 def generate_data_points(num_points, is_line=True, is_log_y=False):
     if is_line and random.random() > 0.3:
@@ -148,6 +156,10 @@ def calculate_error_bars(y_points, is_log_y, h, dpi, long_mode):
                 else: px_bot = get_random_pixel_length(long_mode, h, dpi)
             else:
                 px_bot = px_top
+
+            # CAP CHECK 
+            px_top = min(px_top, MAX_BARHEIGHT)
+            px_bot = min(px_bot, MAX_BARHEIGHT)
 
             if is_log_y:
                 rel_err_top = px_top / plot_h_pixels

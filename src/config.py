@@ -1,5 +1,5 @@
 # Cleaning
-MAX_BARHEIGHT = 430.0
+MAX_BARHEIGHT = 430.0 # Also used for generation
 MINIMUM_PHANTOM_DISTANCE = 15
 
 # Generation
@@ -9,7 +9,7 @@ PLOT_TYPE_PROBS = {
     "boxplot": 0.02,
 }
 DPI_OPTIONS = [72, 100, 150, 200]
-GEN_MISSING_BAR_PROB = 0.40
+GEN_MISSING_BAR_PROB = 0.45
 GEN_ASYMMETRIC_PROB = 0.65
 REALISTIC_COLORS = [
     "#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", # Tableau/Publication
@@ -18,10 +18,10 @@ REALISTIC_COLORS = [
     "#EE6677", "#228833", "#CCBB44", "#66CCEE"             # Prism-like brights
 ]
 # Long Bar / Sanity Settings
-GEN_LONG_FRACTION = 0.20          # Fraction of images biased toward long bars
+GEN_LONG_FRACTION = 0.15          # Fraction of images biased toward long bars
 GEN_LONG_THRESHOLD_PX = 40
 MIN_PIXEL_NONZERO = 2             # Treat smaller distances as zero
-GEN_MAX_LABEL_PX_FACTOR = 1.5     # Clamp labels to factor * height
+GEN_MAX_LABEL_PX_FACTOR = 1.2     # Clamp labels to factor * height
 
 # Detection
 PATCH_H = 800  # 800px height covers ±400px from center, which is safe.
