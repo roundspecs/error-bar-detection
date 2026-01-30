@@ -12,6 +12,7 @@ from config import (
     GEN_LONG_FRACTION,
     MIN_PIXEL_NONZERO,
     GEN_MAX_LABEL_PX_FACTOR,
+    REALISTIC_COLORS
 )
 
 def generate_image():
