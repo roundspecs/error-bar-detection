@@ -167,7 +167,7 @@ def generate_linegraph(ax, is_log_y, long_mode, h, dpi):
     all_lines_data = []
     
     is_grayscale = random.random() < 0.20
-    colors = ["black", "gray"] if is_grayscale else ["tab:blue", "tab:orange", "tab:green", "tab:red", "tab:purple"]
+    colors = ["black", "gray"] if is_grayscale else REALISTIC_COLORS
     
     for i in range(num_series):
         num_points = random.randint(4, 12)
@@ -175,12 +175,12 @@ def generate_linegraph(ax, is_log_y, long_mode, h, dpi):
         top, bot = calculate_error_bars(y, is_log_y, h, dpi, long_mode)
         
         color = random.choice(colors)
-        marker = random.choice(["o", "s", "^", "v", "D"])
+        marker = random.choice(["o", "s", "^", "v", "D", ""])
         linestyle = random.choice(["-", "--", "-."]) if not is_grayscale else "-"
         
         ax.errorbar(
             x, y, yerr=[bot, top], label=f"Group_{i}",
-            fmt=marker, color=color, capsize=random.randint(2, 6),
+            fmt=marker, color=color, capsize=random.choice([0, 3, 5]),
             linestyle=linestyle
         )
         
@@ -197,7 +197,7 @@ def generate_barchart(ax, is_log_y, long_mode, h, dpi):
     all_lines_data = []
     
     is_grayscale = random.random() < 0.20
-    colors = ["black", "gray"] if is_grayscale else ["tab:blue", "tab:orange", "tab:green", "tab:red"]
+    colors = ["black", "gray"] if is_grayscale else REALISTIC_COLORS
     
     num_points = random.randint(4, 12)
     x_base = np.arange(num_points)

@@ -4,14 +4,19 @@ MINIMUM_PHANTOM_DISTANCE = 15
 
 # Generation
 PLOT_TYPE_PROBS = {
-    "linegraph": 0.65,
-    "barchart": 0.30,
-    "boxplot": 0.05,
+    "linegraph": 0.88,
+    "barchart": 0.10,
+    "boxplot": 0.02,
 }
 DPI_OPTIONS = [72, 100, 150, 200]
 GEN_MISSING_BAR_PROB = 0.20
 GEN_ASYMMETRIC_PROB = 0.65
-
+REALISTIC_COLORS = [
+    "#4E79A7", "#F28E2B", "#E15759", "#76B7B2", "#59A14F", # Tableau/Publication
+    "#000000", "#333333",                                  # Standard Black/Dark Gray
+    "#4472C4", "#ED7D31", "#A5A5A5",                       # Excel Default
+    "#EE6677", "#228833", "#CCBB44", "#66CCEE"             # Prism-like brights
+]
 # Long Bar / Sanity Settings
 GEN_LONG_FRACTION = 0.20          # Fraction of images biased toward long bars
 GEN_LONG_THRESHOLD_PX = 40
